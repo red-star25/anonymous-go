@@ -27,7 +27,7 @@ func SignUp() fiber.Handler {
 		// Check validation errors from the User model
 		if validationErr := validator.New().Struct(user); validationErr != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": validationErr.Error(),
+				"message": utils.ValidateTranslator(validationErr),
 			})
 		}
 
@@ -58,6 +58,23 @@ func SignUp() fiber.Handler {
 		user.ID = primitive.NewObjectID()
 		user.UserID = user.ID.Hex()
 
-		return nil
+		// Generate token
+		token, refreshToken, _ := utils.GenerateToken(user.UserID)
+		user.Token = &token
+		user.RefreshToken = &refreshToken
+		user.UserPosts = make([]models.Post, 0)
+
+		// Insert the user into the database
+		_, insertErr := database.UserCollection().InsertOne(ctx, user)
+		if insertErr != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"meesage": "Error inserting user",
+			})
+		}
+
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"message": "User created successfully",
+			"user":    user,
+		})
 	}
 }
