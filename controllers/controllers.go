@@ -78,3 +78,55 @@ func SignUp() fiber.Handler {
 		})
 	}
 }
+
+func Login() fiber.Handler {
+	return func(c fiber.Ctx) error {
+		var ctx, cancel = context.WithTimeout(context.Background(), time.Second*100)
+		defer cancel()
+
+		var user models.User
+		if err := c.Bind().JSON(&user); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid JSON",
+			})
+		}
+
+		if validationErr := validator.New().Struct(user); validationErr != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": utils.ValidateTranslator(validationErr),
+			})
+		}
+
+		var dbUser models.User
+		err := database.UserCollection().FindOne(ctx, bson.M{"username": user.UserName}).Decode(&dbUser)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "Login or Password is incorrect",
+			})
+		}
+
+		valid, msg := utils.VerifyPassword(*dbUser.Password, *user.Password)
+		if !valid {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": msg,
+			})
+		}
+
+		token, refreshToken, _ := utils.GenerateToken(dbUser.UserID)
+		dbUser.Token = &token
+		dbUser.RefreshToken = &refreshToken
+
+		_, updateErr := database.UserCollection().UpdateOne(ctx, bson.M{"username": user.UserName}, bson.M{"$set": bson.M{"token": token, "refresh_token": refreshToken}})
+		if updateErr != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Error updating user",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "Login successful",
+			"user":    dbUser,
+		})
+
+	}
+}

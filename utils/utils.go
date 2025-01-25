@@ -25,10 +25,12 @@ func HashPassword(password string) string {
 func VerifyPassword(userPassword string, givenPassword string) (bool, string) {
 	valid := true
 	msg := ""
-	if err := bcrypt.CompareHashAndPassword([]byte(givenPassword), []byte(userPassword)); err != nil {
+
+	if err := bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(givenPassword)); err != nil {
 		msg = "Login or Password is incorrect"
 		valid = false
 	}
+
 	return valid, msg
 }
 
@@ -71,4 +73,13 @@ func ValidateTranslator(err error) string {
 		}
 	}
 	return err.Error()
+}
+func ValidateToken(tokenString string) (*jwt.Token, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv(JWT_SECRET)), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }
