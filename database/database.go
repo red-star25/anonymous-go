@@ -15,7 +15,7 @@ var client *mongo.Client
 func SetupDatabase() {
 	var uri string
 	if uri = os.Getenv("MONGODB_URI"); uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environment variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/")
+		log.Fatal("You must set your 'MONGODB_URI' environment variable.")
 	}
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
@@ -41,4 +41,8 @@ func SetupDatabase() {
 
 func UserCollection() *mongo.Collection {
 	return client.Database("anonymous-go").Collection("users")
+}
+
+func PostCollection() *mongo.Collection {
+	return client.Database("anonymous-go").Collection("posts")
 }

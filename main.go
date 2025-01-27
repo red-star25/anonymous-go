@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/red-star25/anonymous-go/database"
 	"github.com/red-star25/anonymous-go/routes"
@@ -15,10 +15,12 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	app := fiber.New()
-	routes.SetupRoutes(app)
+	r := gin.New()
+	r.Use(gin.Logger())
+
+	routes.SetupRoutes(r)
 
 	database.SetupDatabase()
 
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(r.Run(":3000"))
 }

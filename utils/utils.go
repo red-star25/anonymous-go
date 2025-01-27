@@ -3,10 +3,11 @@ package utils
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go/v4"
 	"github.com/go-playground/validator/v10"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -34,27 +35,25 @@ func VerifyPassword(userPassword string, givenPassword string) (bool, string) {
 	return valid, msg
 }
 
-func GenerateToken(userName string) (token, refreshToken string, err error) {
-	claims := jwt.MapClaims{
-		"username": userName,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
-	}
+func GenerateToken(userName string, userID string) (token, refreshToken string, err error) {
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":    userID,
+		"expires_at": time.Now().Add(time.Hour * 24),
+	})
 
-	refreshClaims := jwt.MapClaims{
-		"username": userName,
-		"exp":      time.Now().Add(time.Hour * 24 * 7).Unix(),
-	}
+	refreshClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":    userID,
+		"expires_at": time.Now().Add(time.Hour * 24 * 7),
+	})
 
-	token, err = jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(os.Getenv(JWT_SECRET)))
+	token, err = claims.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		log.Fatal(err)
-		return
+		log.Fatal("could not generate token")
 	}
 
-	refreshToken, err = jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(os.Getenv(JWT_SECRET)))
+	refreshToken, err = refreshClaims.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		log.Fatal(err)
-		return
+		log.Fatal("could not generate refresh token")
 	}
 
 	return token, refreshToken, nil
@@ -65,10 +64,10 @@ func ValidateTranslator(err error) string {
 		validationErr := err.(validator.ValidationErrors)
 		for _, e := range validationErr {
 			if e.Tag() == "min" {
-				return e.Field() + " must be at least " + e.Param() + " characters long"
+				return strings.ToLower(e.Field()) + " must be at least " + e.Param() + " characters long"
 			}
 			if e.Tag() == "required" {
-				return e.Field() + " is required"
+				return strings.ToLower(e.Field()) + " is required"
 			}
 		}
 	}
@@ -83,3 +82,41 @@ func ValidateToken(tokenString string) (*jwt.Token, error) {
 	}
 	return token, nil
 }
+
+// Get UserID from JWT Claims
+
+// func ParseJWT(tokenStr string) (map[string]interface{}, error) {
+// 	secret := os.Getenv("JWT_SECRET")
+// 	if secret == "" {
+// 		return nil, errors.New("JWT_SECRET is not set in the environment")
+// 	}
+
+// 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+// 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+// 		}
+// 		return []byte(secret), nil
+// 	})
+
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to parse token: %w", err)
+// 	}
+
+// 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+// 		return claims, nil
+// 	}
+
+// 	return nil, errors.New("invalid token")
+// }
+
+// func GetUserIDFromToken(token string) (*string, error) {
+// 	claims, err := ParseJWT(token)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("invalid token")
+// 	}
+// 	userID, ok := claims["user_id"].(string)
+// 	if !ok {
+// 		return nil, fmt.Errorf("user_id not found in token claims")
+// 	}
+// 	return &userID, nil
+// }
