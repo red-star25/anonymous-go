@@ -172,3 +172,30 @@ func UpdatePost(c *gin.Context) {
 		"message": "Post updated successfully",
 	})
 }
+
+func DeletePost(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+	defer cancel()
+
+	id := c.Param("id")
+	postID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid id",
+		})
+		return
+	}
+
+	_, err = database.PostCollection().DeleteOne(ctx, bson.M{"_id": postID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Post id not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Post deleted successfully",
+	})
+
+}

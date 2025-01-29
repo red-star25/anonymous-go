@@ -37,7 +37,8 @@ type Likes struct {
 }
 
 type Comments struct {
-	ID           primitive.ObjectID `json:"_id" bson:"_id"`
-	Comment_Body *string            `json:"comment"`
-	User_ID      string             `json:"user_id"`
+	ID           primitive.ObjectID `json:"_id" bson:"_id" validate:"required"`
+	Comment_Body *string            `json:"comment" validate:"required"`
+	User_ID      string             `json:"user_id" validate:"required"`
+	Created_At   time.Time          `json:"created_at"`
 }
