@@ -10,7 +10,8 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/signup", controllers.SignUp)
 	r.POST("/login", controllers.Login)
 
-	r.POST("/createPost", middleware.Protected(), controllers.CreatePost)
-	r.GET("/getPosts", middleware.Protected(), controllers.GetPosts)
-	r.GET("/getPost/:id", middleware.Protected(), controllers.GetPost)
+	r.POST("/post", middleware.Protected(), controllers.CreatePost)
+	r.GET("/post", middleware.Protected(), controllers.GetPosts)
+	r.GET("/post/:id", middleware.Protected(), controllers.GetPost)
+	r.PUT("post/:id", middleware.Protected(), controllers.UpdatePost)
 }

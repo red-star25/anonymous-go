@@ -106,4 +106,69 @@ func GetPosts(c *gin.Context) {
 }
 
 func GetPost(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+	defer cancel()
+
+	postID := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid post ID",
+		})
+		return
+	}
+
+	var post models.Post
+	err = database.PostCollection().FindOne(ctx, bson.M{"_id": id}).Decode(&post)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Post not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"post": post,
+	})
+}
+
+func UpdatePost(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+	defer cancel()
+
+	var post models.Post
+
+	if err := c.Bind(&post); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid JSON",
+		})
+	}
+
+	postID := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid post ID",
+		})
+		return
+	}
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": bson.M{
+		"title":      post.Title,
+		"body":       post.Body,
+		"updated_at": time.Now(),
+	}}
+
+	_, updateError := database.PostCollection().UpdateOne(ctx, filter, update)
+	if updateError != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Error updating post",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Post updated successfully",
+	})
 }
