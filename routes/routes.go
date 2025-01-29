@@ -11,4 +11,6 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/login", controllers.Login)
 
 	r.POST("/createPost", middleware.Protected(), controllers.CreatePost)
+	r.GET("/getPosts", middleware.Protected(), controllers.GetPosts)
+	r.GET("/getPost/:id", middleware.Protected(), controllers.GetPost)
 }

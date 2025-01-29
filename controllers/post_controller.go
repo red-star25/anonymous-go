@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -69,4 +70,40 @@ func CreatePost(c *gin.Context) {
 		"message": "Post created successfully",
 		"post":    userPost,
 	})
+}
+
+func GetPosts(c *gin.Context) {
+	var posts []models.Post
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+	defer cancel()
+
+	cursor, err := database.PostCollection().Find(ctx, bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Error fetching posts",
+		})
+		return
+	}
+
+	for cursor.Next(ctx) {
+		var post models.Post
+		if err := cursor.Decode(&post); err != nil {
+			log.Fatal(err)
+		}
+		posts = append(posts, post)
+	}
+
+	if !(len(posts) > 0) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "No posts found",
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"posts": posts,
+		})
+	}
+}
+
+func GetPost(c *gin.Context) {
 }
