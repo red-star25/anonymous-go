@@ -124,6 +124,9 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("token", token, 3600*24, "", "", true, true)
+
 	// Respond with the created user
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged in successfully",

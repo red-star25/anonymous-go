@@ -22,8 +22,13 @@ func SetupRoutes(r *gin.Engine) {
 	c := r.Group("/comment")
 	{
 		c.POST("/:id", middleware.Protected(), controllers.AddComment)
-		// c.POST("/", middleware.Protected(), controllers.GetComments)
-		// c.POST("/", middleware.Protected(), controllers.DeleteComment)
+		c.GET("/:id", middleware.Protected(), controllers.GetComments)
+		c.DELETE("/", middleware.Protected(), controllers.DeleteComment)
+	}
+
+	l := r.Group("/like")
+	{
+		l.POST("/", middleware.Protected(), controllers.Like)
 	}
 
 }

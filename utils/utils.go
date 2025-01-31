@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -73,50 +75,50 @@ func ValidateTranslator(err error) string {
 	}
 	return err.Error()
 }
-func ValidateToken(tokenString string) (*jwt.Token, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func ValidateToken(tokenString string) (bool, error) {
+	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv(JWT_SECRET)), nil
 	})
 	if err != nil {
-		return nil, err
+		return false, err
 	}
-	return token, nil
+	return true, nil
 }
 
 // Get UserID from JWT Claims
 
-// func ParseJWT(tokenStr string) (map[string]interface{}, error) {
-// 	secret := os.Getenv("JWT_SECRET")
-// 	if secret == "" {
-// 		return nil, errors.New("JWT_SECRET is not set in the environment")
-// 	}
+func ParseJWT(tokenStr string) (map[string]interface{}, error) {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return nil, errors.New("JWT_SECRET is not set in the environment")
+	}
 
-// 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-// 		}
-// 		return []byte(secret), nil
-// 	})
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(secret), nil
+	})
 
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to parse token: %w", err)
-// 	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", err)
+	}
 
-// 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-// 		return claims, nil
-// 	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
 
-// 	return nil, errors.New("invalid token")
-// }
+	return nil, errors.New("invalid token")
+}
 
-// func GetUserIDFromToken(token string) (*string, error) {
-// 	claims, err := ParseJWT(token)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("invalid token")
-// 	}
-// 	userID, ok := claims["user_id"].(string)
-// 	if !ok {
-// 		return nil, fmt.Errorf("user_id not found in token claims")
-// 	}
-// 	return &userID, nil
-// }
+func GetUserIDFromToken(token string) (*string, error) {
+	claims, err := ParseJWT(token)
+	if err != nil {
+		return nil, fmt.Errorf("invalid token")
+	}
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("user_id not found in token claims")
+	}
+	return &userID, nil
+}

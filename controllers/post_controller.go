@@ -36,9 +36,9 @@ func CreatePost(c *gin.Context) {
 
 	userPost.Created_At = time.Now()
 	userPost.Updated_At = time.Now()
-	userPost.Likes = make([]models.Likes, 0)
+	userPost.Likes = make([]models.Like, 0)
 	userPost.ID = primitive.NewObjectID()
-	userPost.Comments = make([]models.Comments, 0)
+	userPost.Comments = make([]models.Comment, 0)
 
 	_, insertError := database.PostCollection().InsertOne(ctx, userPost)
 	if insertError != nil {

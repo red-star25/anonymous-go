@@ -24,21 +24,19 @@ type Post struct {
 	Title      *string            `json:"title"`
 	Body       *string            `json:"body" validate:"required"`
 	User_ID    string             `json:"user_id" validate:"required"`
-	Likes      []Likes            `json:"likes"`
-	Comments   []Comments         `json:"comments"`
+	Likes      []Like             `json:"likes"`
+	Comments   []Comment          `json:"comments"`
 	Created_At time.Time          `json:"created_at"`
 	Updated_At time.Time          `json:"updated_at"`
 }
 
-type Likes struct {
-	ID          primitive.ObjectID `json:"_id" bson:"_id"`
-	Like_Status *bool              `json:"is_liked"`
-	User_ID     string             `json:"user_id"`
+type Like struct {
+	Is_Liked bool   `json:"is_liked"`
+	User_ID  string `json:"user_id"`
 }
 
-type Comments struct {
+type Comment struct {
 	ID           primitive.ObjectID `json:"_id" bson:"_id" validate:"required"`
 	Comment_Body *string            `json:"comment" validate:"required"`
-	User_ID      string             `json:"user_id" validate:"required"`
 	Created_At   time.Time          `json:"created_at"`
 }
