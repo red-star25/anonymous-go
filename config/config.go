@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -27,22 +28,22 @@ func (rc *RedisConfig) StartRedis() {
 
 	RedisClient = client
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*30)
 	defer cancel()
 
-	ping, err := client.Ping(ctx).Result()
+	_, err := client.Ping(ctx).Result()
 	if err != nil {
 		log.Fatal("Error connecting to redis")
 	}
 
-	log.Println(ping)
+	log.Println("Connected to redis")
 }
 
 func NewRedisConfig() *RedisConfig {
 	return &RedisConfig{
-		Addr:     "redis-11068.c261.us-east-1-4.ec2.redns.redis-cloud.com:11068",
-		Username: "default",
-		Password: "DM4iBq2pTYNQkweBZmwqGKyDYrj872M8",
+		Addr:     os.Getenv("REDIS_ADDR"),
+		Username: os.Getenv("REDIS_USERNAME"),
+		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	}
 }

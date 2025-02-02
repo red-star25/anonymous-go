@@ -46,8 +46,6 @@ func AddComment(c *gin.Context) {
 		})
 	}
 
-	// TODO: add comment to the current users collection
-
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Comment added successfully",
 		"comment": body,

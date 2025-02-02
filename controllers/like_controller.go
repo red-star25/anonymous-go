@@ -13,8 +13,9 @@ import (
 )
 
 func Like(c *gin.Context) {
-	var body models.Like
-	if err := c.ShouldBindJSON(&body); err != nil {
+	var userID models.UserID
+
+	if err := c.BindJSON(&userID); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
 		})
@@ -24,8 +25,7 @@ func Like(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
 	defer cancel()
 
-	id := c.Query("id") // Get post id from query parameter
-	postID, err := primitive.ObjectIDFromHex(id)
+	postID, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
@@ -33,44 +33,64 @@ func Like(c *gin.Context) {
 		return
 	}
 
-	// check if the user has already liked the post
 	filter := bson.M{
-		"_id":           postID,
-		"likes.user_id": body.User_ID,
+		"_id": postID,
 	}
-	// update the like if the user has already liked the posts
 	update := bson.M{
-		"$set": bson.M{
-			"likes.$.is_liked": body.Is_Liked,
+		"$push": bson.M{
+			"likes": userID,
 		},
 	}
-	result, err := database.PostCollection().UpdateOne(ctx, filter, update)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to update like",
-		})
-		return
-	}
 
-	// if the user has not liked the post, add the like
-	if result.MatchedCount == 0 {
-		filter = bson.M{"_id": postID}
+	var likeResult bson.M
+	err = database.PostCollection().FindOne(ctx, bson.M{"_id": postID, "likes": userID}).Decode(&likeResult)
+	if err == nil {
 		update = bson.M{
-			"$push": bson.M{
-				"likes": body,
+			"$pull": bson.M{
+				"likes": userID,
 			},
 		}
+
 		_, err = database.PostCollection().UpdateOne(ctx, filter, update)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Failed to add like",
+				"message": "Failed to remove like",
 			})
 			return
 		}
-	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Like added successfully",
-	})
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Like removed successfully",
+		})
+		return
+	} else {
+		result, err := database.PostCollection().UpdateOne(ctx, filter, update)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Failed to update like",
+			})
+			return
+		}
+
+		if result.MatchedCount == 0 {
+			filter = bson.M{"_id": postID}
+			update = bson.M{
+				"$push": bson.M{
+					"likes": userID,
+				},
+			}
+			_, err = database.PostCollection().UpdateOne(ctx, filter, update)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Failed to add like",
+				})
+				return
+			}
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Like added successfully",
+		})
+	}
 
 }

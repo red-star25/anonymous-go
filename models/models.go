@@ -16,7 +16,7 @@ type User struct {
 	Created_At    time.Time          `json:"created_at"`
 	Updated_At    time.Time          `json:"updated_at"`
 	User_ID       string             `json:"user_id"`
-	User_Posts    []Post             `json:"user_posts"`
+	User_Posts    []string           `json:"user_posts"`
 }
 
 type Post struct {
@@ -24,15 +24,14 @@ type Post struct {
 	Title      *string            `json:"title"`
 	Body       *string            `json:"body" validate:"required"`
 	User_ID    string             `json:"user_id" validate:"required"`
-	Likes      []Like             `json:"likes"`
+	Likes      []UserID           `json:"likes"`
 	Comments   []Comment          `json:"comments"`
 	Created_At time.Time          `json:"created_at"`
 	Updated_At time.Time          `json:"updated_at"`
 }
 
-type Like struct {
-	Is_Liked bool   `json:"is_liked"`
-	User_ID  string `json:"user_id"`
+type UserID struct {
+	User_ID string `json:"user_id"`
 }
 
 type Comment struct {

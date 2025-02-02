@@ -36,7 +36,7 @@ func CreatePost(c *gin.Context) {
 
 	userPost.Created_At = time.Now()
 	userPost.Updated_At = time.Now()
-	userPost.Likes = make([]models.Like, 0)
+	userPost.Likes = make([]models.UserID, 0)
 	userPost.ID = primitive.NewObjectID()
 	userPost.Comments = make([]models.Comment, 0)
 
@@ -48,15 +48,17 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	id, err := primitive.ObjectIDFromHex(userPost.User_ID)
+	userID, err := primitive.ObjectIDFromHex(userPost.User_ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Error creating post",
+			"message": "Invalid user ID",
 		})
 		return
 	}
-	filter := bson.D{primitive.E{Key: "_id", Value: id}}
-	update := bson.D{primitive.E{Key: "$push", Value: bson.D{primitive.E{Key: "user_posts", Value: userPost}}}}
+	filter := bson.M{"_id": userID}
+	update := bson.M{"$push": bson.M{
+		"user_posts": userPost.ID.Hex(),
+	}}
 
 	_, updateError := database.UserCollection().UpdateOne(ctx, filter, update)
 	if updateError != nil {

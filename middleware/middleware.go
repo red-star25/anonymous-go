@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -68,7 +69,13 @@ func Protected() gin.HandlerFunc {
 		defer cancel()
 
 		redisToken, err := config.RedisClient.Get(ctx, userID).Result()
+		if redisToken == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized: token not found in redis"})
+			c.Abort()
+			return
+		}
 		if err != nil {
+			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Session expired, please log in again"})
 			c.Abort()
 			return

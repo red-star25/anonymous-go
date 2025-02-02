@@ -85,8 +85,6 @@ func ValidateToken(tokenString string) (bool, error) {
 	return true, nil
 }
 
-// Get UserID from JWT Claims
-
 func ParseJWT(tokenStr string) (map[string]interface{}, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {

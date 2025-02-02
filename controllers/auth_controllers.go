@@ -36,7 +36,8 @@ func SignUp(c *gin.Context) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
-	count, err := database.UserCollection().CountDocuments(ctx, bson.M{"username": user.Username})
+	filter := bson.M{"username": user.Username}
+	count, err := database.UserCollection().CountDocuments(ctx, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Error checking if user exists",
@@ -62,7 +63,7 @@ func SignUp(c *gin.Context) {
 	token, refreshToken, _ := utils.GenerateToken(*user.Username, user.User_ID)
 	user.Token = &token
 	user.Refresh_Token = &refreshToken
-	user.User_Posts = make([]models.Post, 0)
+	user.User_Posts = make([]string, 0)
 
 	_, insertErr := database.UserCollection().InsertOne(ctx, user)
 	if insertErr != nil {
@@ -98,7 +99,8 @@ func Login(c *gin.Context) {
 	}
 
 	var dbUser models.User
-	err := database.UserCollection().FindOne(ctx, bson.M{"username": user.Username}).Decode(&dbUser)
+	filter := bson.M{"username": user.Username}
+	err := database.UserCollection().FindOne(ctx, filter).Decode(&dbUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "User does not exist",
@@ -118,7 +120,9 @@ func Login(c *gin.Context) {
 	dbUser.Token = &token
 	dbUser.Refresh_Token = &refreshToken
 
-	_, updateErr := database.UserCollection().UpdateOne(ctx, bson.M{"username": user.Username}, bson.M{"$set": bson.M{"token": token, "refresh_token": refreshToken}})
+	filter = bson.M{"username": user.Username}
+	update := bson.M{"$set": bson.M{"token": token, "refresh_token": refreshToken}}
+	_, updateErr := database.UserCollection().UpdateOne(ctx, filter, update)
 	if updateErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Error updating user",
@@ -132,7 +136,6 @@ func Login(c *gin.Context) {
 
 	config.SetRedisToken(dbUser.User_ID, token)
 
-	// Respond with the created user
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged in successfully",
 		"user":    dbUser,

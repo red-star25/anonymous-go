@@ -26,10 +26,7 @@ func SetupRoutes(r *gin.Engine) {
 		c.DELETE("/", middleware.Protected(), controllers.DeleteComment)
 	}
 
-	l := r.Group("/like")
-	{
-		l.POST("/", middleware.Protected(), controllers.Like)
-	}
+	r.POST("/like/:id", middleware.Protected(), controllers.Like)
 
 	r.POST("/logout", middleware.Protected(), controllers.Logout)
 
