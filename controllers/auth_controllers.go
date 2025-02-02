@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/red-star25/anonymous-go/config"
 	"github.com/red-star25/anonymous-go/database"
 	"github.com/red-star25/anonymous-go/models"
 	"github.com/red-star25/anonymous-go/utils"
@@ -124,8 +126,11 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("token", token, 3600*24, "", "", true, true)
+	session := sessions.Default(c)
+	session.Set("token", token)
+	session.Save()
+
+	config.SetRedisToken(dbUser.User_ID, token)
 
 	// Respond with the created user
 	c.JSON(http.StatusOK, gin.H{
@@ -133,4 +138,15 @@ func Login(c *gin.Context) {
 		"user":    dbUser,
 		"token":   token,
 	})
+}
+
+func Logout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Options(sessions.Options{MaxAge: -1})
+	if err := session.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully logged out"})
 }

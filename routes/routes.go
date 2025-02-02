@@ -31,4 +31,6 @@ func SetupRoutes(r *gin.Engine) {
 		l.POST("/", middleware.Protected(), controllers.Like)
 	}
 
+	r.POST("/logout", middleware.Protected(), controllers.Logout)
+
 }
