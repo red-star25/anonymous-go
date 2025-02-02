@@ -14,6 +14,7 @@ type RedisConfig struct {
 	Addr     string
 	Password string
 	DB       int
+	Username string
 }
 
 func (rc *RedisConfig) StartRedis() {
@@ -21,6 +22,7 @@ func (rc *RedisConfig) StartRedis() {
 		Addr:     rc.Addr,
 		Password: rc.Password,
 		DB:       rc.DB,
+		Username: rc.Username,
 	})
 
 	RedisClient = client
@@ -38,8 +40,9 @@ func (rc *RedisConfig) StartRedis() {
 
 func NewRedisConfig() *RedisConfig {
 	return &RedisConfig{
-		Addr:     "localhost:6379",
-		Password: "",
+		Addr:     "redis-11068.c261.us-east-1-4.ec2.redns.redis-cloud.com:11068",
+		Username: "default",
+		Password: "DM4iBq2pTYNQkweBZmwqGKyDYrj872M8",
 		DB:       0,
 	}
 }
