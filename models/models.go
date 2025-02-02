@@ -36,6 +36,6 @@ type UserID struct {
 
 type Comment struct {
 	ID           primitive.ObjectID `json:"_id" bson:"_id" validate:"required"`
-	Comment_Body *string            `json:"comment" validate:"required"`
+	Comment_Body string             `json:"comment" validate:"required"`
 	Created_At   time.Time          `json:"created_at"`
 }

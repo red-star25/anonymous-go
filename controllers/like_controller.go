@@ -33,7 +33,18 @@ func Like(c *gin.Context) {
 		return
 	}
 
-	filter := bson.M{
+	// check if post exists
+	var post models.Post
+	filter := bson.M{"_id": postID}
+	err = database.PostCollection().FindOne(ctx, filter).Decode(&post)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Post not found",
+		})
+		return
+	}
+
+	filter = bson.M{
 		"_id": postID,
 	}
 	update := bson.M{

@@ -22,6 +22,13 @@ func AddComment(c *gin.Context) {
 		return
 	}
 
+	if body.Comment_Body == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Comment text is required",
+		})
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*100)
 	defer cancel()
 
@@ -32,10 +39,21 @@ func AddComment(c *gin.Context) {
 		})
 		return
 	}
+
+	var post models.Post
+	filter := bson.M{"_id": postID}
+	err = database.PostCollection().FindOne(ctx, filter).Decode(&post)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Post not found",
+		})
+		return
+	}
+
 	body.ID = primitive.NewObjectID()
 	body.Created_At = time.Now()
 
-	filter := bson.M{"_id": postID}
+	filter = bson.M{"_id": postID}
 	update := bson.M{"$push": bson.M{
 		"comments": body,
 	}}
