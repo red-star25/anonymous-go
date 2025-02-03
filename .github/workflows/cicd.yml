@@ -24,7 +24,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Pull docker image
-        run: docker pull dhruvnakum/anonymous-go:latest
+        run: sudo docker pull dhruvnakum/anonymous-go:latest
       - name: Delete old container
         run: docker rm -f go-app-container  
       - name: Run docker container          
