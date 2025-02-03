@@ -25,6 +25,12 @@ jobs:
     steps:
       - name: Pull docker image
         run: sudo docker pull dhruvnakum/anonymous-go:latest
+      - name: Delete old mongo container
+        run: sudo docker rm -f mongo-demo
+      - name: Pull mongo image
+        run: sudo docker pull mongo:latest
+      - name: Run mongo container
+        run: sudo docker run -d --name mongo-demo -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -p 27017:27017 -v mongodemo:/data/db mongo:8.0
       - name: Delete old container
         run: sudo docker rm -f anonymous-go  
       - name: Run docker container          
