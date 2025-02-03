@@ -35,5 +35,5 @@ func main() {
 	r.Use(sessions.Sessions("redis-session", store))
 	routes.SetupRoutes(r)
 
-	log.Fatal(r.Run(":3000"))
+	log.Fatal(r.Run(":" + os.Getenv("PORT")))
 }
