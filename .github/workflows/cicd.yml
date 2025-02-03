@@ -28,4 +28,4 @@ jobs:
       - name: Delete old container
         run: sudo docker rm -f go-app-container  
       - name: Run docker container          
-        run: docker run -d -p 3000:3000 --name anonymous-go dhruvnakum/anonymous-go
+        run: sudo docker run -d -p 3000:3000 --name anonymous-go dhruvnakum/anonymous-go
