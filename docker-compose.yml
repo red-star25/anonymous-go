@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      # It is best to override variables that need inter-container connectivity.
+      # For example, use the service name 'mongo' instead of 'localhost'
+      - MONGODB_URI=mongodb://admin:admin@mongo:27017/
+      - JWT_SECRET=secret
+      - REDIS_SECRET=secret
+      - REDIS_ADDR=redis-11068.c261.us-east-1-4.ec2.redns.redis-cloud.com:11068
+      - REDIS_USERNAME=default
+      - REDIS_PASSWORD=DM4iBq2pTYNQkweBZmwqGKyDYrj872M8
+    volumes:
+      - .:/app
+    # Optionally, mount your .env file if you prefer that approach:
+    env_file:
+      - .env
+
+  mongo:
+    image: mongo:8.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+volumes:
+  mongodata:
+    driver: local

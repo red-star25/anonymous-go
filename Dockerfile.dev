@@ -1,0 +1,26 @@
+# Dockerfile.dev
+
+# Use the official Go image with Alpine
+FROM golang:1.23-alpine
+
+# Install git (required for downloading dependencies) and other tools
+RUN apk update && apk add --no-cache git
+
+# Install Air using the new module path
+RUN go install github.com/air-verse/air@latest
+
+# Set the working directory
+WORKDIR /app
+
+# Copy go.mod and go.sum first (for caching dependencies)
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the application source code
+COPY . .
+
+# Expose your application's port
+EXPOSE 3000
+
+# Set the entrypoint to Air for hot reloading
+CMD ["air"]

@@ -27,7 +27,10 @@ func main() {
 	redisConfig := config.NewRedisConfig()
 	redisConfig.StartRedis()
 
-	store, _ := redis.NewStore(10, "tcp", "localhost:6379", "", []byte(os.Getenv("REDIS_SECRET")))
+	store, err := redis.NewStore(10, "tcp", os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PASSWORD"), []byte(os.Getenv("REDIS_SECRET")))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	r.Use(sessions.Sessions("redis-session", store))
 	routes.SetupRoutes(r)
