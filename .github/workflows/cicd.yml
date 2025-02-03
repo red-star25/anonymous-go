@@ -26,6 +26,6 @@ jobs:
       - name: Pull docker image
         run: sudo docker pull dhruvnakum/anonymous-go:latest
       - name: Delete old container
-        run: docker rm -f go-app-container  
+        run: sudo docker rm -f go-app-container  
       - name: Run docker container          
         run: docker run -d -p 3000:3000 --name anonymous-go dhruvnakum/anonymous-go
