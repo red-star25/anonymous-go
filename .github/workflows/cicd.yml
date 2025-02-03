@@ -14,11 +14,11 @@ jobs:
       - name: Create .env file
         run: echo "PORT=${{ secrets.PORT }}" >> .env
       - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        run: sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build docker image
-        run: docker build -t dhruvnakum/anonymous-go .
+        run: sudo docker build -t dhruvnakum/anonymous-go .
       - name: Push image to docker hub
-        run: docker push dhruvnakum/anonymous-go:latest
+        run: sudo docker push dhruvnakum/anonymous-go:latest
   deploy:
     needs: build
     runs-on: self-hosted
@@ -30,8 +30,8 @@ jobs:
       - name: Pull mongo image
         run: sudo docker pull mongo:latest
       - name: Run mongo container
-        run: sudo docker run -d --name mongo-demo -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -p 27017:27017 -v mongodemo:/data/db mongo:8.0
+        run: sudo docker run -d --name mongo-demo -p 27017:27017 -v mongodemo:/data/db mongo:8.0
       - name: Delete old container
         run: sudo docker rm -f anonymous-go  
       - name: Run docker container          
-        run: sudo docker run -d -p 3000:3000 --name anonymous-go -e MONGODB_URI="mongodb://admin:admin@localhost:27017/" dhruvnakum/anonymous-go
+        run: sudo docker run -d -p 3000:3000 --name anonymous-go -e MONGODB_URI="mongodb://localhost:27017/" dhruvnakum/anonymous-go
