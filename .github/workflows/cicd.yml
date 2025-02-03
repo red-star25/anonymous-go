@@ -38,5 +38,5 @@ jobs:
       - name: Run mongo container
         run: sudo docker run --name mongo-demo --network anonymous-go-nw -d mongo:8.0
       - name: Run docker container
-        run: sudo docker run --name anonymous-go --network anonymous-go-nw -d dhruvakum/anonymous-go
+        run: sudo docker run --name anonymous-go --network anonymous-go-nw -d dhruvnakum/anonymous-go
 
