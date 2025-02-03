@@ -23,15 +23,18 @@ jobs:
     needs: build
     runs-on: self-hosted
     steps:
-      - name: Pull docker image
-        run: sudo docker pull dhruvnakum/anonymous-go:latest
+      - name: Delete old anonymous-go container
+        run: sudo docker rm -f anonymous-go  
+      - name: Pull new anonymous-go docker image
+        run: sudo docker pull dhruvnakum/anonymous-go
       - name: Delete old mongo container
         run: sudo docker rm -f mongo-demo
-      - name: Pull mongo image
-        run: sudo docker pull mongo:latest
+      - name: Pull new mongo docker image
+        run: sudo docker pull mongo:8.0
+      - name: Create networks
+        run: sudo docker network create anonymous-go-nw
       - name: Run mongo container
-        run: sudo docker run -d --name mongo-demo -p 27017:27017 -v mongodemo:/data/db mongo:8.0
-      - name: Delete old container
-        run: sudo docker rm -f anonymous-go  
-      - name: Run docker container          
-        run: sudo docker run -d -p 3000:3000 --name anonymous-go -e MONGODB_URI="mongodb://localhost:27017/" dhruvnakum/anonymous-go
+        run: sudo docker run --name mongo-demo --network anonymous-go-nw -d mongo:8.0
+      - name: Run docker container
+        run: sudo docker run --name anonymous-go --network anonymous-go-nw -d dhruvakum/anonymous-go
+
