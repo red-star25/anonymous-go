@@ -41,6 +41,7 @@ jobs:
         run: |
           sudo docker run --name anonymous-go \
           --network anonymous-go-nw \
+          -p 3000:3000 \
           -e MONGODB_URI="mongodb://mongo-demo:27017" \
           -e JWT_SECRET="secret" \
           -e REDIS_SECRET="secret" \
