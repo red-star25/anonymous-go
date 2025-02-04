@@ -42,5 +42,10 @@ jobs:
           sudo docker run --name anonymous-go \
           --network anonymous-go-nw \
           -e MONGODB_URI="mongodb://mongo-demo:27017" \
+          -e JWT_SECRET="secret" \
+          -e REDIS_SECRET="secret" \
+          -e REDIS_ADDR="redis-11068.c261.us-east-1-4.ec2.redns.redis-cloud.com:11068" \
+          -e REDIS_PASSWORD="DM4iBq2pTYNQkweBZmwqGKyDYrj872M8" \
+          -e PORT=3000 \
           -d dhruvnakum/anonymous-go:latest
 
