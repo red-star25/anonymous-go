@@ -16,6 +16,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func Hello(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hello World",
+	})
+}
+
 func SignUp(c *gin.Context) {
 	var user models.User
 	if err := c.BindJSON(&user); err != nil {

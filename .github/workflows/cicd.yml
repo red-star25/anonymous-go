@@ -3,7 +3,7 @@ name: Deploy Go Application
 on:
   push:
     branches:
-      - deploy-to-ec2
+      - ec2
 
 jobs:
   build:
@@ -14,18 +14,33 @@ jobs:
       - name: Create .env file
         run: echo "PORT=${{ secrets.PORT }}" >> .env
       - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        run: sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build docker image
-        run: docker build -t dhruvnakum/anonymous-go .
+        run: sudo docker build -t dhruvnakum/anonymous-go .
       - name: Push image to docker hub
-        run: docker push dhruvnakum/anonymous-go:latest
+        run: sudo docker push dhruvnakum/anonymous-go:latest
   deploy:
     needs: build
     runs-on: self-hosted
     steps:
-      - name: Pull docker image
-        run: sudo docker pull dhruvnakum/anonymous-go:latest
-      - name: Delete old container
-        run: docker rm -f go-app-container  
-      - name: Run docker container          
-        run: docker run -d -p 3000:3000 --name anonymous-go dhruvnakum/anonymous-go
+      - name: Delete old anonymous-go container
+        run: sudo docker rm -f anonymous-go  
+      - name: Pull new anonymous-go docker image
+        run: sudo docker pull dhruvnakum/anonymous-go
+      - name: Delete old mongo container
+        run: sudo docker rm -f mongo-demo
+      - name: Pull new mongo docker image
+        run: sudo docker pull mongo:8.0
+      - name: Delete old network
+        run: sudo docker network rm anonymous-go-nw
+      - name: Create networks
+        run: sudo docker network create anonymous-go-nw
+      - name: Run mongo container
+        run: sudo docker run --name mongo-demo --network anonymous-go-nw -d mongo:8.0
+      - name: Run docker container
+        run: |
+          sudo docker run --name anonymous-go \
+          --network anonymous-go-nw \
+          -e MONGODB_URI="mongodb://mongo-demo:27017" \
+          -d dhruvnakum/anonymous-go:latest
+
