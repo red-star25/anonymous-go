@@ -24,7 +24,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Delete old anonymous-go container
-        run: sudo docker rm -f anonymous-go  
+        run: sudo docker rm -f anonymous-go
       - name: Pull new anonymous-go docker image
         run: sudo docker pull dhruvnakum/anonymous-go
       - name: Delete old mongo container
@@ -32,7 +32,13 @@ jobs:
       - name: Pull new mongo docker image
         run: sudo docker pull mongo:8.0
       - name: Delete old network
-        run: sudo docker network rm anonymous-go-nw
+        run: |
+          if sudo docker network inspect anonymous-go-nw >/dev/null 2>&1; then
+            sudo docker network rm anonymous-go-nw
+          else
+            echo "Network anonymous-go-nw not found, skipping..."
+          fi
+
       - name: Create networks
         run: sudo docker network create anonymous-go-nw
       - name: Run mongo container
@@ -41,6 +47,11 @@ jobs:
         run: |
           sudo docker run --name anonymous-go \
           --network anonymous-go-nw \
+          -p 3000:3000 \
           -e MONGODB_URI="mongodb://mongo-demo:27017" \
+          -e JWT_SECRET="secret" \
+          -e REDIS_SECRET="secret" \
+          -e REDIS_ADDR="redis-11068.c261.us-east-1-4.ec2.redns.redis-cloud.com:11068" \
+          -e REDIS_PASSWORD="DM4iBq2pTYNQkweBZmwqGKyDYrj872M8" \
+          -e PORT=3000 \
           -d dhruvnakum/anonymous-go:latest
-

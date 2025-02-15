@@ -10,7 +10,6 @@ type User struct {
 	ID            primitive.ObjectID `json:"_id" bson:"_id"`
 	Username      *string            `json:"username" validate:"required,min=3,max=50"`
 	Password      *string            `json:"password" validate:"required,min=6,max=50"`
-	Image         *string            `json:"image"`
 	Token         *string            `json:"token"`
 	Refresh_Token *string            `json:"refresh_token"`
 	Created_At    time.Time          `json:"created_at"`
